@@ -10,12 +10,12 @@ import os
 import re
 from dotenv import load_dotenv
 
-# NOTE: to find which model names you have, use cli tool:  `ollama list`
+# Load environment variables
 load_dotenv()
 
 # Debugging: Print the API key to ensure it's loaded correctly
 groq_api_key = os.getenv("GROQ_API_KEY")
-print("GROQ_API_KEY:", groq_api_key)
+# print("GROQ_API_KEY:", groq_api_key)
 
 if not groq_api_key:
     os.environ["GROQ_API_KEY"] = "your_actual_api_key_here"
@@ -23,92 +23,59 @@ if not groq_api_key:
 
 llm = ChatGroq(
     model='llama3-8b-8192',
-    # base_url="http://localhost:11434/v1",
-    api_key=os.getenv("GROQ_API_KEY"),  # Get the API key from the.env file
+    api_key=os.getenv("GROQ_API_KEY"),  # Get the API key from the .env file
 )
-
-
 
 duckduckgo_search = DuckDuckGoSearchRun()
 
-#to keep track of tasks performed by agents
+# to keep track of tasks performed by agents
 task_values = []
 
 def create_crewai_setup(product_name):
     # Define Agents
-    market_research_analyst = Agent(
-        role="Market Research Analyst",
-        goal=f"""Analyze the market demand for {product_name} and 
-                 suggest marketing strategies""",
-        backstory=f"""Expert at understanding market demand, target audience, 
-                      and competition for products like {product_name}. 
-                      Skilled in developing marketing strategies 
-                      to reach a wide audience.""",
+    ui_researcher = Agent(
+        role="UI Researcher",
+        goal=f"""Research the latest UI trends for {product_name} and 
+                 suggest design improvements""",
+        backstory=f"""Expert in user interface design and user experience. 
+                      Skilled in identifying the latest trends and best practices 
+                      in UI design.""",
         verbose=True,
         allow_delegation=True,
         tools=[duckduckgo_search],
         llm=llm,
     )
 
-    technology_expert = Agent(
-        role="Technology Expert",
-        goal=f"Assess technological feasibilities and requirements for producing high-quality {product_name}",
-        backstory=f"""Visionary in current and emerging technological trends, 
-                      especially in products like {product_name}. 
-                      Identifies which technologies are best suited 
-                      for different business models.""",
+    code_maker = Agent(
+        role="Code Maker",
+        goal=f"Generate code snippets for {product_name} based on the requirements",
+        backstory=f"""Experienced software developer with a knack for writing 
+                      clean and efficient code. Specializes in generating 
+                      code snippets for various applications.""",
         verbose=True,
         allow_delegation=True,
         llm=llm,
     )
-
-    business_consultant = Agent(
-        role="Business Development Consultant",
-        goal=f"""Evaluate the business model for {product_name}, 
-               focusing on scalability and revenue streams""",
-        backstory=f"""Seasoned in shaping business strategies for products like {product_name}. 
-                      Understands scalability and potential 
-                      revenue streams to ensure long-term sustainability.""",
-        verbose=True,
-        allow_delegation=True,
-        llm=llm,
-    )
-
 
     # Define Tasks
     task1 = Task(
-        description=f"""Analyze the market demand for {product_name}. Current month is Jan 2024.
-                        Write a report on the ideal customer profile and marketing 
-                        strategies to reach the widest possible audience. 
-                        Include at least 10 bullet points addressing key marketing areas.""",
-        expected_output="Report on market demand analysis and marketing strategies.",
-        agent=market_research_analyst,
+        description=f"""Research the latest UI trends for {product_name}. 
+                    Write a report suggesting design improvements. 
+                    Include at least 10 bullet points on key UI trends.""",
+        expected_output="Report on UI trends and design improvements.",
+        agent=ui_researcher,
     )
-    # Define Task 2
     task2 = Task(
-        description=f"""Assess the technological aspects of manufacturing 
-                    high-quality {product_name}. Write a report detailing necessary 
-                    technologies and manufacturing approaches. 
-                    Include at least 10 bullet points on key technological areas.""",
-        expected_output="Report on technological aspects of manufacturing.",
-        agent=technology_expert,
-    )
-    # Define Task 3
-    task3 = Task(
-        description=f"""Summarize the market and technological reports 
-                    and evaluate the business model for {product_name}. 
-                    Write a report on the scalability and revenue streams 
-                    for the product. Include at least 10 bullet points 
-                    on key business areas. Give Business Plan, 
-                    Goals and Timeline for the product launch. Current month is Jan 2024.""",
-        expected_output="Report on business model evaluation and product launch plan.",
-        agent=business_consultant,
+        description=f"""Generate code snippets for {product_name} based on the requirements. 
+                    Include at least 10 code snippets addressing key functionalities.""",
+        expected_output="Code snippets for key functionalities.",
+        agent=code_maker,
     )
 
     # Create and Run the Crew
     product_crew = Crew(
-        agents=[market_research_analyst, technology_expert, business_consultant],
-        tasks=[task1, task2, task3],
+        agents=[ui_researcher, code_maker],
+        tasks=[task1, task2],
         verbose=2,
         process=Process.sequential,
     )
@@ -116,7 +83,7 @@ def create_crewai_setup(product_name):
     crew_result = product_crew.kickoff()
     return crew_result
 
-#display the console processing on streamlit UI
+# Display the console processing on streamlit UI
 class StreamToExpander:
     def __init__(self, expander):
         self.expander = expander
@@ -147,13 +114,10 @@ class StreamToExpander:
 
             cleaned_data = cleaned_data.replace("Entering new CrewAgentExecutor chain", f":{self.colors[self.color_index]}[Entering new CrewAgentExecutor chain]")
 
-        if "Market Research Analyst" in cleaned_data:
-            # Apply different color 
-            cleaned_data = cleaned_data.replace("Market Research Analyst", f":{self.colors[self.color_index]}[Market Research Analyst]")
-        if "Business Development Consultant" in cleaned_data:
-            cleaned_data = cleaned_data.replace("Business Development Consultant", f":{self.colors[self.color_index]}[Business Development Consultant]")
-        if "Technology Expert" in cleaned_data:
-            cleaned_data = cleaned_data.replace("Technology Expert", f":{self.colors[self.color_index]}[Technology Expert]")
+        if "UI Researcher" in cleaned_data:
+            cleaned_data = cleaned_data.replace("UI Researcher", f":{self.colors[self.color_index]}[UI Researcher]")
+        if "Code Maker" in cleaned_data:
+            cleaned_data = cleaned_data.replace("Code Maker", f":{self.colors[self.color_index]}[Code Maker]")
         if "Finished chain." in cleaned_data:
             cleaned_data = cleaned_data.replace("Finished chain.", f":{self.colors[self.color_index]}[Finished chain.]")
 
@@ -164,57 +128,33 @@ class StreamToExpander:
 
 # Streamlit interface
 def run_crewai_app():
-    st.title("AI Agent Business Product Launch")
-    with st.expander("About the Team:"):
-        st.subheader("Diagram")
-        left_co, cent_co,last_co = st.columns(3)
-        with cent_co:
-            st.image("my.png")
+    st.title("Website UI Researcher & Code Maker")
+    st.image("image.png")  # Ensure the path to the image is correct
 
-        st.subheader("Market Research Analyst")
-        st.text("""       
-        Role = Market Research Analyst
-        Goal = Analyze the market demand for {product_name} and suggest marketing strategies
-        Backstory = Expert at understanding market demand, target audience, 
-                    and competition for products like {product_name}. 
-                    Skilled in developing marketing strategies 
-                    to reach a wide audience.
-        Task = Analyze the market demand for {product_name}. Current month is Jan 2024.
-               Write a report on the ideal customer profile and marketing 
-               strategies to reach the widest possible audience. 
-               Include at least 10 bullet points addressing key marketing areas. """)
-        
-        st.subheader("Technology Expert")
-        st.text("""       
-        Role = Technology Expert
-        Goal = Assess technological feasibilities and requirements for producing high-quality {product_name}
-        Backstory = Visionary in current and emerging technological trends, 
-                    especially in products like {product_name}. 
-                    Identifies which technologies are best suited 
-                    for different business models. 
-        Task = Assess the technological aspects of manufacturing 
-               high-quality {product_name}. Write a report detailing necessary 
-               technologies and manufacturing approaches. 
-               Include at least 10 bullet points on key technological areas.""")
+    # Use st.header to create a header for 'About the Team'
+    st.header("About the Team:")
 
-        st.subheader("Business Development Consultant")
-        st.text("""       
-        Role = Business Development Consultant 
-        Goal= Evaluate the business model for {product_name}
-              focusing on scalability and revenue streams
-        Backstory = Seasoned in shaping business strategies for products like {product_name}. 
-                    Understands scalability and potential 
-                    revenue streams to ensure long-term sustainability.
-        Task = Summarize the market and technological reports 
-               and evaluate the business model for {product_name}. 
-               Write a report on the scalability and revenue streams 
-               for the product. Include at least 10 bullet points 
-               on key business areas. Give Business Plan, 
-               Goals and Timeline for the product launch. Current month is Jan 2024. """)
+    st.subheader("UI Researcher")
+    st.text("""       
     
-    product_name = st.text_input("Enter a product name to analyze the market and business strategy.")
+   - Research the latest UI trends and suggest design improvements
+   - Expert in user interface design and user experience. 
+            Skilled in identifying the latest trends and 
+            best practices in UI design.""")
 
-    if st.button("Run Analysis"):
+    st.subheader("Code Maker")
+    st.text("""       
+   
+    -Generate code snippets based on the requirements
+    -Experienced software developer with a knack for 
+            writing clean and efficient code. 
+            Specializes in generating 
+    code snippets for various applications.
+    -The code generated by code maker is not Ready for production """)
+
+    product_name = st.text_input("Enter.")
+
+    if st.button("Run Researcher/Coder"):
         # Placeholder for stopwatch
         stopwatch_placeholder = st.empty()
         
@@ -229,9 +169,6 @@ def run_crewai_app():
         end_time = time.time()
         total_time = end_time - start_time
         stopwatch_placeholder.text(f"Total Time Elapsed: {total_time:.2f} seconds")
-
-        st.header("Tasks:")
-        st.table({"Tasks" : task_values})
 
         st.header("Results:")
         st.markdown(crew_result)
