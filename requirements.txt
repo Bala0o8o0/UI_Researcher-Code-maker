@@ -4,3 +4,4 @@ crewai
 duckduckgo-search
 langchain
 groq                                  
+langchain-groq
