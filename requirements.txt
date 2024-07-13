@@ -150,7 +150,7 @@ python-rapidjson==1.18
 pytz==2024.1
 PyYAML==6.0.1
 referencing==0.35.1
-regex==2024.5.15
+regex
 requests==2.32.3
 requests-oauthlib==2.0.0
 rich==13.7.1
