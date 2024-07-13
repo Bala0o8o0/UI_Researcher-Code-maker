@@ -21,7 +21,7 @@ cachetools==5.3.3
 certifi==2024.7.4
 charset-normalizer==3.3.2
 chroma-hnswlib==0.7.3
-chromadb==0.4.24
+
 clarifai==10.5.4
 clarifai-grpc==10.6.3
 click==8.1.7
@@ -37,7 +37,6 @@ dnspython==2.6.1
 docstring_parser==0.16
 duckduckgo_search==6.1.12
 email_validator==2.2.0
-embedchain==0.1.116
 exceptiongroup==1.2.2
 fastapi==0.111.0
 fastapi-cli==0.0.4
