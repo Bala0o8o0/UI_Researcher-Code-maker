@@ -2,7 +2,6 @@ embedchain
 chromadb
 
 
-streamlit==1.10.0
 
 
 aiohttp==3.9.5
