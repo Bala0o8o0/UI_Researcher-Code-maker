@@ -1,6 +1,6 @@
 embedchain 
 chromadb
-pysqlite3-binary==0.4.0
+
 
 aiohttp==3.9.5
 aiosignal==1.3.1
