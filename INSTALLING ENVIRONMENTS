@@ -1,0 +1,3 @@
+mkdir Environment
+python -m venv env
+\Environment\env\Scripts>activate
