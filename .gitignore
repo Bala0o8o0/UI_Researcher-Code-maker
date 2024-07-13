@@ -4,17 +4,3 @@ env/
 # Ignore environment variables file
 .env
 
-# Ignore Python cache files
-__pycache__/
-*.pyc
-
-# Ignore operating system files
-Thumbs.db
-Desktop.ini
-
-# Ignore IDE files (if using PyCharm)
-.idea/
-
-# Ignore other unnecessary files
-*.log
-*.tmp
